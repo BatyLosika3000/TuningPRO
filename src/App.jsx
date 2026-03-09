@@ -1,50 +1,51 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
 	ThemeProvider,
 	createTheme,
 	CssBaseline,
 	Box,
-	Container,
-	Typography,
 	AppBar,
 	Toolbar,
-	Button,
-	Grid,
-	IconButton,
+	Typography,
 	Stack,
+	Button,
+	IconButton,
+	Container,
+	Grid,
 	Dialog,
 	DialogTitle,
 	DialogContent,
 	TextField,
 	DialogActions,
 	CircularProgress,
+	MenuItem,
+	Select,
+	FormControl,
+	InputLabel,
 	Drawer,
 	List,
 	ListItem,
 	ListItemButton,
 	ListItemText,
+	Badge,
 } from '@mui/material'
 import {
-	Instagram,
+	Menu as MenuIcon,
+	Close,
 	Telegram,
 	WhatsApp,
 	LocationOn,
 	Phone,
-	ChevronLeft,
-	ChevronRight,
-	Menu as MenuIcon,
+	ShoppingCart,
 } from '@mui/icons-material'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 
-const MY_PROJECTS = [
-	{ id: 1, img: '/images_main/car1.jpg' },
-	{ id: 2, img: '/images_main/car_interior1.jpg' },
-	{ id: 3, img: '/images_main/car2.jpg' },
-	{ id: 4, img: '/images_main/car_interior2.jpg' },
-	{ id: 5, img: '/images_main/car3.jpg' },
-	{ id: 6, img: '/images_main/car_interior3.jpg' },
-	{ id: 7, img: '/images_main/Nikita.png' },
-]
+// Импорты страниц
+import MainPage from './pages/MainPage'
+import WorksPage from './pages/WorksPage'
+import ServicesPage from './pages/ServicesPage'
+// Импорт нового компонента корзины
+import CartDrawer from './components/CartDrawer'
 
 const theme = createTheme({
 	palette: {
@@ -52,100 +53,137 @@ const theme = createTheme({
 		primary: { main: '#00e5ff' },
 		background: { default: '#050505', paper: '#111111' },
 	},
-	typography: {
-		fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
-	},
-	components: {
-		MuiCssBaseline: {
-			styleOverrides: {
-				html: { scrollBehavior: 'smooth' },
-				body: { overflowX: 'hidden' },
-			},
-		},
-	},
+	typography: { fontFamily: '"Inter", sans-serif' },
 })
 
-const slideVariants = {
-	enter: direction => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
-	center: { zIndex: 1, x: 0, opacity: 1 },
-	exit: direction => ({
-		zIndex: 0,
-		x: direction < 0 ? '100%' : '-100%',
-		opacity: 0,
-	}),
-}
+const CAR_BRANDS = [
+	'BMW',
+	'Mercedes-Benz',
+	'Audi',
+	'Porsche',
+	'Lexus',
+	'Land Rover',
+	'Tesla',
+	'Другое',
+]
 
 function App() {
-	const [[page, direction], setPage] = useState([0, 0])
-	const [open, setOpen] = useState(false)
+	const [currentTab, setCurrentTab] = useState('Главная')
+	const [open, setOpen] = useState(false) // Модалка записи
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+	const [cartOpen, setCartOpen] = useState(false) // Состояние боковой корзины
 	const [loading, setLoading] = useState(false)
+
+	// Состояние корзины (массив товаров)
+	const [cart, setCart] = useState([])
+
 	const [formData, setFormData] = useState({
 		name: '',
 		phone: '',
 		carModel: '',
 	})
+	const [errors, setErrors] = useState({ name: '', phone: '', carModel: '' })
 
-	const index = Math.abs(page % MY_PROJECTS.length)
-	const paginate = newDirection => setPage([page + newDirection, newDirection])
+	const navItems = ['Главная', 'Услуги', 'Наши работы']
 
-	useEffect(() => {
-		const timer = setInterval(() => paginate(1), 8000)
-		return () => clearInterval(timer)
-	}, [page])
+	// Логика корзины
+	const addToCart = item => {
+		setCart(prev => [...prev, { ...item, cartId: Date.now() }])
+	}
+
+	const removeFromCart = cartId => {
+		setCart(prev => prev.filter(item => item.cartId !== cartId))
+	}
 
 	const handleInputChange = e => {
 		const { name, value } = e.target
 		setFormData(prev => ({ ...prev, [name]: value }))
+		if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
+	}
+
+	const validate = () => {
+		let tempErrors = { name: '', phone: '', carModel: '' }
+		let isValid = true
+		if (formData.name.trim().length < 2) {
+			tempErrors.name = 'Минимум 2 символа'
+			isValid = false
+		}
+		const phoneRegex = /^((\+7|8)+([0-9]){10})$/
+		if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+			tempErrors.phone = 'Формат: +79001234567'
+			isValid = false
+		}
+		if (!formData.carModel) {
+			tempErrors.carModel = 'Выберите марку'
+			isValid = false
+		}
+		setErrors(tempErrors)
+		return isValid
 	}
 
 	const handleSubmit = async () => {
+		if (!validate()) return
 		setLoading(true)
-		await new Promise(resolve => setTimeout(resolve, 1500))
-		alert(`Спасибо, ${formData.name}! Заявка на ${formData.carModel} принята.`)
+		await new Promise(r => setTimeout(r, 1500))
+
+		const itemsList = cart.map(i => i.name).join(', ')
+		alert(
+			`Спасибо, ${formData.name}! Заявка на ${formData.carModel} принята.\nВыбрано: ${itemsList || 'Консультация'}`,
+		)
+
 		setOpen(false)
+		setCart([]) // Очистка корзины после заказа
 		setFormData({ name: '', phone: '', carModel: '' })
 		setLoading(false)
 	}
-
-	const navItems = ['Каталог', 'Услуги', 'Наши работы']
 
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 
+			{/* HEADER */}
 			<AppBar
 				position='fixed'
 				sx={{
-					background: 'rgba(5, 5, 5, 0.85)',
+					background: 'rgba(5, 5, 5, 0.8)',
 					backdropFilter: 'blur(15px)',
-					borderBottom: '1px solid rgba(255,255,255,0.08)',
+					borderBottom: '1px solid rgba(255,255,255,0.1)',
 				}}
 				elevation={0}
 			>
-				<Toolbar sx={{ px: { xs: 2, md: 5 } }}>
+				<Toolbar
+					sx={{
+						justifyContent: 'space-between',
+						height: 80,
+						px: { xs: 2, md: 6 },
+					}}
+				>
 					<Typography
 						variant='h5'
-						sx={{ fontWeight: 900, letterSpacing: -1.5 }}
+						sx={{ fontWeight: 900, cursor: 'pointer', letterSpacing: -1.5 }}
+						onClick={() => setCurrentTab('Главная')}
 					>
 						TUNING<span style={{ color: '#00e5ff' }}>PRO</span>
 					</Typography>
 
-					<Box sx={{ flexGrow: 1 }} />
-
-					{/* Десктопное меню — возвращено на центр/право */}
+					{/* DESKTOP NAV */}
 					<Stack
 						direction='row'
 						spacing={4}
-						sx={{ display: { xs: 'none', md: 'flex' } }}
+						sx={{
+							display: { xs: 'none', md: 'flex' },
+							position: 'absolute',
+							left: '50%',
+							transform: 'translateX(-50%)',
+						}}
 					>
 						{navItems.map(item => (
 							<Button
 								key={item}
-								color='inherit'
+								onClick={() => setCurrentTab(item)}
 								sx={{
-									fontWeight: 500,
-									fontSize: '0.9rem',
+									fontWeight: 600,
+									color: currentTab === item ? '#00e5ff' : '#fff',
 									'&:hover': { color: '#00e5ff', background: 'transparent' },
 								}}
 							>
@@ -154,32 +192,53 @@ function App() {
 						))}
 					</Stack>
 
-					<Box sx={{ flexGrow: { xs: 0, md: 1 } }} />
+					<Stack direction='row' spacing={1} alignItems='center'>
+						{/* ИКОНКА КОРЗИНЫ В ШАПКЕ */}
+						<Badge badgeContent={cart.length} color='primary'>
+							<IconButton color='inherit' onClick={() => setCartOpen(true)}>
+								<ShoppingCart />
+							</IconButton>
+						</Badge>
 
-					{/* Заглушка для симметрии на десктопе */}
-					<Box sx={{ width: 120, display: { xs: 'none', md: 'block' } }} />
-
-					<IconButton
-						color='inherit'
-						edge='end'
-						onClick={() => setMobileMenuOpen(true)}
-						sx={{ display: { md: 'none' } }}
-					>
-						<MenuIcon />
-					</IconButton>
+						<IconButton
+							color='inherit'
+							edge='end'
+							onClick={() => setMobileMenuOpen(true)}
+							sx={{ display: { md: 'none' } }}
+						>
+							<MenuIcon />
+						</IconButton>
+					</Stack>
 				</Toolbar>
 			</AppBar>
+
+			{/* КОРЗИНА (SIDEBAR) */}
+			<CartDrawer
+				isOpen={cartOpen}
+				onClose={() => setCartOpen(false)}
+				cart={cart}
+				onRemove={removeFromCart}
+				onCheckout={() => {
+					setCartOpen(false)
+					setOpen(true)
+				}}
+			/>
 
 			<Drawer
 				anchor='right'
 				open={mobileMenuOpen}
 				onClose={() => setMobileMenuOpen(false)}
-				PaperProps={{ sx: { width: 250, bgcolor: '#111' } }}
+				PaperProps={{ sx: { width: 280, bgcolor: '#111' } }}
 			>
 				<List sx={{ pt: 4 }}>
 					{navItems.map(text => (
 						<ListItem key={text} disablePadding>
-							<ListItemButton onClick={() => setMobileMenuOpen(false)}>
+							<ListItemButton
+								onClick={() => {
+									setCurrentTab(text)
+									setMobileMenuOpen(false)
+								}}
+							>
 								<ListItemText
 									primary={text}
 									primaryTypographyProps={{
@@ -193,239 +252,34 @@ function App() {
 				</List>
 			</Drawer>
 
-			<Box sx={{ pt: { xs: 12, md: 18 }, pb: 10, textAlign: 'center' }}>
-				<Container maxWidth='lg'>
-					<motion.div
-						initial={{ opacity: 0, y: 30 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.8 }}
-					>
-						<Typography
-							variant='h1'
-							sx={{
-								fontWeight: 950,
-								mb: 2,
-								fontSize: { xs: '2.5rem', md: '5rem' },
-								lineHeight: 0.9,
-								letterSpacing: -2,
-							}}
-						>
-							НОВЫЙ УРОВЕНЬ <br />{' '}
-							<span style={{ color: '#00e5ff' }}>ТВОЕГО АВТО</span>
-						</Typography>
-						<Typography
-							variant='h6'
-							sx={{
-								color: 'rgba(255,255,255,0.5)',
-								fontWeight: 300,
-								mb: 6,
-								px: 2,
-							}}
-						>
-							Эксклюзивные решения для тех, кто ценит стиль
-						</Typography>
-					</motion.div>
-				</Container>
+			{/* РЕНДЕРИНГ СТРАНИЦ */}
+			<AnimatePresence mode='wait'>
+				{currentTab === 'Главная' && (
+					<MainPage key='main' onOpenModal={() => setOpen(true)} />
+				)}
 
-				<Box
-					sx={{
-						position: 'relative',
-						height: { xs: '350px', md: '650px' },
-						width: '100%',
-						overflow: 'hidden',
-						bgcolor: '#000',
-					}}
-				>
-					<AnimatePresence initial={false} custom={direction} mode='popLayout'>
-						<motion.img
-							key={page}
-							custom={direction}
-							src={MY_PROJECTS[index].img}
-							variants={slideVariants}
-							initial='enter'
-							animate='center'
-							exit='exit'
-							transition={{
-								x: { duration: 1, ease: [0.4, 0, 0.2, 1] },
-								opacity: { duration: 0.5 },
-							}}
-							style={{
-								width: '100%',
-								height: '100%',
-								objectFit: 'cover',
-								position: 'absolute',
-								top: 0,
-								left: 0,
-							}}
-						/>
-					</AnimatePresence>
+				{currentTab === 'Наши работы' && (
+					<WorksPage key='works' onOrderClick={() => setOpen(true)} />
+				)}
 
-					<IconButton
-						onClick={() => paginate(-1)}
-						sx={{
-							position: 'absolute',
-							left: { xs: 10, md: 30 },
-							top: '50%',
-							zIndex: 10,
-							bgcolor: 'rgba(0,0,0,0.4)',
-							color: '#fff',
-						}}
-					>
-						<ChevronLeft fontSize='large' />
-					</IconButton>
-					<IconButton
-						onClick={() => paginate(1)}
-						sx={{
-							position: 'absolute',
-							right: { xs: 10, md: 30 },
-							top: '50%',
-							zIndex: 10,
-							bgcolor: 'rgba(0,0,0,0.4)',
-							color: '#fff',
-						}}
-					>
-						<ChevronRight fontSize='large' />
-					</IconButton>
-				</Box>
+				{currentTab === 'Услуги' && (
+					<ServicesPage
+						key='services'
+						onAddToCart={addToCart} // Теперь передаем функцию добавления в корзину
+					/>
+				)}
+			</AnimatePresence>
 
-				<Stack
-					direction='row'
-					spacing={1.5}
-					justifyContent='center'
-					sx={{ mt: 3 }}
-				>
-					{MY_PROJECTS.map((_, i) => (
-						<Box
-							key={i}
-							onClick={() => setPage([i, i > index ? 1 : -1])}
-							sx={{
-								width: i === index ? 30 : 10,
-								height: 10,
-								borderRadius: '5px',
-								bgcolor: i === index ? '#00e5ff' : 'rgba(255,255,255,0.2)',
-								transition: '0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-								cursor: 'pointer',
-							}}
-						/>
-					))}
-				</Stack>
-
-				<Box sx={{ mt: 6, px: 2 }}>
-					<Button
-						variant='contained'
-						onClick={() => setOpen(true)}
-						sx={{
-							px: { xs: 4, md: 12 },
-							py: 2.5,
-							borderRadius: '50px',
-							fontSize: '1.1rem',
-							fontWeight: 800,
-							textTransform: 'uppercase',
-							background: 'linear-gradient(90deg, #00e5ff, #00b0ff)',
-							color: '#000',
-							width: { xs: '100%', sm: 'auto' },
-						}}
-					>
-						Записаться на тюнинг
-					</Button>
-				</Box>
-			</Box>
-
-			<Dialog
-				open={open}
-				onClose={() => !loading && setOpen(false)}
-				BackdropProps={{
-					sx: { backdropFilter: 'blur(10px)', bgcolor: 'rgba(0,0,0,0.8)' },
-				}}
-				PaperProps={{
-					sx: {
-						borderRadius: 8,
-						bgcolor: '#111',
-						border: '1px solid rgba(255,255,255,0.1)',
-						p: 3,
-						maxWidth: '450px',
-					},
-				}}
-			>
-				<DialogTitle
-					sx={{ fontWeight: 900, textAlign: 'center', fontSize: '2rem' }}
-				>
-					ВАША <span style={{ color: '#00e5ff' }}>ЗАЯВКА</span>
-				</DialogTitle>
-				<DialogContent sx={{ mt: 1 }}>
-					<Stack spacing={3}>
-						<TextField
-							fullWidth
-							label='Ваше имя'
-							name='name'
-							variant='outlined'
-							value={formData.name}
-							onChange={handleInputChange}
-							disabled={loading}
-							InputProps={{ sx: { borderRadius: 4 } }}
-						/>
-						<TextField
-							fullWidth
-							label='Телефон'
-							name='phone'
-							variant='outlined'
-							value={formData.phone}
-							onChange={handleInputChange}
-							disabled={loading}
-							InputProps={{ sx: { borderRadius: 4 } }}
-						/>
-						<TextField
-							fullWidth
-							label='Марка авто'
-							name='carModel'
-							variant='outlined'
-							value={formData.carModel}
-							onChange={handleInputChange}
-							disabled={loading}
-							InputProps={{ sx: { borderRadius: 4 } }}
-						/>
-					</Stack>
-				</DialogContent>
-				<DialogActions sx={{ pb: 2, px: 3, justifyContent: 'center' }}>
-					<Button
-						onClick={() => setOpen(false)}
-						sx={{ color: 'rgba(255,255,255,0.5)' }}
-						disabled={loading}
-					>
-						Закрыть
-					</Button>
-					<Button
-						variant='contained'
-						onClick={handleSubmit}
-						disabled={loading || !formData.name || !formData.phone}
-						sx={{
-							px: 6,
-							borderRadius: 10,
-							bgcolor: '#00e5ff',
-							color: '#000',
-							fontWeight: 700,
-							minWidth: '160px',
-						}}
-					>
-						{loading ? (
-							<CircularProgress size={24} color='inherit' />
-						) : (
-							'Жду звонка'
-						)}
-					</Button>
-				</DialogActions>
-			</Dialog>
-
+			{/* FOOTER (без изменений) */}
 			<Box
-				component='footer'
-				sx={{ py: 10, bgcolor: '#000', borderTop: '1px solid #111' }}
+				sx={{ py: 10, bgcolor: '#000', borderTop: '1px solid #111', mt: 10 }}
 			>
 				<Container>
 					<Grid
 						container
 						spacing={6}
-						justifyContent='center'
 						textAlign='center'
+						justifyContent='center'
 					>
 						<Grid item xs={12} md={4}>
 							<Typography variant='h6' sx={{ fontWeight: 900, mb: 2 }}>
@@ -435,16 +289,13 @@ function App() {
 								variant='body2'
 								sx={{
 									color: 'rgba(255,255,255,0.4)',
-									lineHeight: 1.8,
-									maxWidth: '300px',
+									maxWidth: 280,
 									mx: 'auto',
 								}}
 							>
-								Профессиональное дооснащение автомобилей премиум-класса. <br />{' '}
-								Барнаул 2026.
+								Премиальное дооснащение автомобилей в Барнауле.
 							</Typography>
 						</Grid>
-
 						<Grid item xs={12} md={4}>
 							<Typography
 								variant='overline'
@@ -452,24 +303,23 @@ function App() {
 							>
 								Контакты
 							</Typography>
-							<Stack spacing={2} sx={{ mt: 2 }} alignItems='center'>
-								<Stack direction='row' spacing={2} alignItems='center'>
+							<Stack spacing={1.5} sx={{ mt: 2 }} alignItems='center'>
+								<Stack direction='row' spacing={1}>
 									<LocationOn sx={{ color: '#00e5ff' }} />
-									<Typography variant='body1'>пр. Ленина, д. 46</Typography>
+									<Typography variant='body2'>пр. Ленина, д. 46</Typography>
 								</Stack>
-								<Stack direction='row' spacing={2} alignItems='center'>
+								<Stack direction='row' spacing={1}>
 									<Phone sx={{ color: '#00e5ff' }} />
-									<Typography variant='body1'>+7 (913) 239-09-63</Typography>
+									<Typography variant='body2'>+7 (913) 239-09-63</Typography>
 								</Stack>
 							</Stack>
 						</Grid>
-
 						<Grid item xs={12} md={4}>
 							<Typography
 								variant='overline'
 								sx={{ color: '#00e5ff', fontWeight: 900 }}
 							>
-								Мы в соцсетях
+								Соцсети
 							</Typography>
 							<Stack
 								direction='row'
@@ -478,34 +328,104 @@ function App() {
 								justifyContent='center'
 							>
 								<IconButton
-									component='a'
 									href='https://t.me/HNKNT0S'
 									target='_blank'
-									sx={{ border: '1px solid #222' }}
+									sx={{ color: '#00e5ff', border: '1px solid #222' }}
 								>
 									<Telegram />
 								</IconButton>
 								<IconButton
-									component='a'
 									href='https://wa.me/79132390963'
 									target='_blank'
-									sx={{ border: '1px solid #222' }}
+									sx={{ color: '#00e5ff', border: '1px solid #222' }}
 								>
 									<WhatsApp />
-								</IconButton>
-								<IconButton
-									component='a'
-									href='https://instagram.com/'
-									target='_blank'
-									sx={{ border: '1px solid #222' }}
-								>
-									<Instagram />
 								</IconButton>
 							</Stack>
 						</Grid>
 					</Grid>
 				</Container>
 			</Box>
+
+			{/* MODAL ЗАПИСИ */}
+			<Dialog
+				open={open}
+				onClose={() => !loading && setOpen(false)}
+				PaperProps={{
+					sx: {
+						borderRadius: 8,
+						bgcolor: 'rgba(17, 17, 17, 0.85)',
+						backdropFilter: 'blur(15px)',
+						p: 3,
+						maxWidth: 450,
+					},
+				}}
+			>
+				<DialogTitle
+					sx={{ fontWeight: 900, textAlign: 'center', fontSize: '2rem' }}
+				>
+					ЗАЯВКА
+				</DialogTitle>
+				<DialogContent sx={{ mt: 1 }}>
+					<Stack spacing={3}>
+						<TextField
+							fullWidth
+							label='Ваше имя'
+							name='name'
+							value={formData.name}
+							onChange={handleInputChange}
+							error={!!errors.name}
+							helperText={errors.name}
+						/>
+						<TextField
+							fullWidth
+							label='Телефон'
+							name='phone'
+							placeholder='+79001234567'
+							value={formData.phone}
+							onChange={handleInputChange}
+							error={!!errors.phone}
+							helperText={errors.phone}
+						/>
+						<FormControl fullWidth error={!!errors.carModel}>
+							<InputLabel>Марка авто</InputLabel>
+							<Select
+								name='carModel'
+								value={formData.carModel}
+								label='Марка авто'
+								onChange={handleInputChange}
+							>
+								{CAR_BRANDS.map(brand => (
+									<MenuItem key={brand} value={brand}>
+										{brand}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</Stack>
+				</DialogContent>
+				<DialogActions sx={{ pb: 2, justifyContent: 'center' }}>
+					<Button
+						onClick={handleSubmit}
+						variant='contained'
+						disabled={loading}
+						sx={{
+							px: 8,
+							py: 1.5,
+							borderRadius: 10,
+							bgcolor: '#00e5ff',
+							color: '#000',
+							fontWeight: 800,
+						}}
+					>
+						{loading ? (
+							<CircularProgress size={24} color='inherit' />
+						) : (
+							'ОТПРАВИТЬ'
+						)}
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</ThemeProvider>
 	)
 }

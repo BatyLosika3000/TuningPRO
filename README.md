@@ -1,16 +1,43 @@
-# React + Vite
+# 🏎️ Premium Tuning Studio Web Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Интерактивное веб-приложение для тюнинг-ателье, сочетающее в себе функционал витрины услуг, портфолио и системы предварительного заказа. Проект выполнен в концепции **High-End UI**, вдохновленной эстетикой современных конфигураторов премиальных автобрендов.
 
-Currently, two official plugins are available:
+## 🎯 Цель проекта
+Демонстрация возможностей современной фронтенд-разработки для бизнеса в сфере Automotive. Основной упор сделан на:
+* **UX/UI:** Создание иммерсивного опыта (эффект погружения) через темную тему и микроанимации.
+* **Производительность:** Мгновенная реакция интерфейса на действия пользователя без перезагрузки страниц.
+* **Конверсия:** Продуманный путь пользователя от просмотра портфолио до оформления заявки.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠 Технические особенности и решения
 
-## React Compiler
+### 1. Архитектура и Состояние (State Management)
+* **React Context & Props:** Реализована сквозная логика корзины. Пользователь может добавлять услуги из разных категорий, при этом состояние синхронизировано между страницами `ServicesPage` и компонентом `CartDrawer`.
+* **Dynamic Rendering:** Страница услуг (`ServicesPage`) использует объектную структуру данных для отрисовки категорий, что позволяет легко масштабировать список услуг без правки верстки.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Визуальные эффекты (Graphics & Animation)
+* **Framer Motion:** Использование `AnimatePresence` для плавных переходов между состояниями (например, при переходе от списка категорий к списку услуг).
+* **Glassmorphism:** Применение эффектов `backdrop-filter: blur` для карточек и модальных окон, что создает ощущение глубины на фоне высококачественных изображений автомобилей.
+* **Параллакс-эффект:** Использование `background-attachment: fixed` для фоновых изображений страниц, создающее динамику при скролле.
 
-## Expanding the ESLint configuration
+### 3. Компонентный подход (MUI Customization)
+* Глубокая кастомизация библиотеки **Material UI** под фирменный стиль:
+    * Создание кастомной цветовой палитры (неоновый `#00e5ff` на угольно-черном фоне).
+    * Адаптивная сетка (`Grid`), корректно работающая на всех разрешениях: от смартфонов до широкоформатных мониторов.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📂 Структура проекта
+* `src/pages/` — логика основных экранов (Главная, Услуги, Работы).
+* `src/components/` — переиспользуемые UI-элементы (Корзина, Навигация, Модальные окна).
+* `public/images_main/` — оптимизированные графические ресурсы проекта.
+
+## 🚀 Планы по развитию (Roadmap)
+- [ ] Интеграция с **Telegram Bot API** для мгновенной отправки заказов администратору.
+- [ ] Добавление интерактивного 3D-конфигуратора (с использованием Three.js).
+- [ ] Личный кабинет клиента для отслеживания истории работ над автомобилем.
+
+## 👥 Команда разработки
+* **Nikita Bissing** — Project Management & Product Vision.
+* **Artyom Krakhtinov** — Lead Frontend Development & Architecture.
+* **Grigory Kuksa, Ilya Redkin** — Content Strategy & UI Support.
+
+---
+*Проект разработан в 2026 году как пример реализации современного бизнес-решения на стеке React.*

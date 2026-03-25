@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
 	plugins: [react()],
-	base: '/TUNINGPRO/', // Обязательно добавь это!
+	base: '/TuningPRO/', // Обязательно добавь это!
 })

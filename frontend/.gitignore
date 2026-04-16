@@ -1,0 +1,11 @@
+# Фронтенд
+node_modules/
+dist/
+.env
+
+# Бэкенд
+__pycache__/
+venv/
+.venv
+*.pyc
+.database.db
